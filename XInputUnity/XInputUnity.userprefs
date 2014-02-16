@@ -1,8 +1,8 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace />
-  <MonoDevelop.Ide.Workbench ActiveDocument="H:\dev\xboxControllerUnityIntegration\unity\Assets\XInputTest.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\XInputTest.cs">
     <Files>
-      <File FileName="H:\dev\xboxControllerUnityIntegration\unity\Assets\XInputTest.cs" Line="18" Column="57" />
+      <File FileName="Assets\XInputTest.cs" Line="133" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

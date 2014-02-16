@@ -188,6 +188,44 @@ namespace XInputDotNetPure
         }
     }
 
+    public enum ButtonsConstants
+    {
+        DPadUp = 0x00000001,
+        DPadDown = 0x00000002,
+        DPadLeft = 0x00000004,
+        DPadRight = 0x00000008,
+        Start = 0x00000010,
+        Back = 0x00000020,
+        LeftThumb = 0x00000040,
+        RightThumb = 0x00000080,
+        LeftShoulder = 0x0100,
+        RightShoulder = 0x0200,
+        A = 0x1000,
+        B = 0x2000,
+        X = 0x4000,
+        Y = 0x8000,
+        LeftTrigger = 0x10000,
+        RightTrigger = 0x20000
+    }    
+    /*{
+        DPadUp = 0x00001,
+        DPadDown = 0x00002,
+        DPadLeft = 0x00004,
+        DPadRight = 0x00008,
+        Start = 0x00010,
+        Back = 0x00020,
+        LeftThumb = 0x00040,
+        RightThumb = 0x00080,
+        LeftShoulder = 0x00100,
+        RightShoulder = 0x00200,
+        A = 0x01000,
+        B = 0x02000,
+        X = 0x04000,
+        Y = 0x08000,
+        LeftTrigger = 0x10000,
+        RightTrigger = 0x20000
+    }*/
+
     public struct GamePadState
     {
         internal struct RawState
@@ -214,42 +252,6 @@ namespace XInputDotNetPure
         GamePadThumbSticks thumbSticks;
         GamePadTriggers triggers;
         internal RawState rawState;
-
-        enum ButtonsConstants
-        {
-            DPadUp = 0x00001,
-            DPadDown = 0x00002,
-            DPadLeft = 0x00004,
-            DPadRight = 0x00008,
-            Start = 0x00010,
-            Back = 0x00020,
-            LeftThumb = 0x00040,
-            RightThumb = 0x00080,
-            LeftShoulder = 0x00100,
-            RightShoulder = 0x00200,
-            A = 0x01000,
-            B = 0x02000,
-            X = 0x04000,
-            Y = 0x08000,
-            LeftTrigger = 0x10000,
-            RightTrigger = 0x20000
-        }
-        /*{
-            DPadUp = 0x00000001,
-            DPadDown = 0x00000002,
-            DPadLeft = 0x00000004,
-            DPadRight = 0x00000008,
-            Start = 0x00000010,
-            Back = 0x00000020,
-            LeftThumb = 0x00000040,
-            RightThumb = 0x00000080,
-            LeftShoulder = 0x0100,
-            RightShoulder = 0x0200,
-            A = 0x1000,
-            B = 0x2000,
-            X = 0x4000,
-            Y = 0x8000
-        }*/
 
         internal GamePadState(bool isConnected, RawState rawState, GamePadDeadZone deadZone)
         {
@@ -327,18 +329,37 @@ namespace XInputDotNetPure
             get { return thumbSticks; }
         }
 
-        internal bool AllButtonsOnThiState(uint buttons)
+        public bool AllButtons(uint buttons)
         {
             // ok, first triggers are not included in buttons, so handle this case first;
-            if ((buttons & (uint)ButtonsConstants.LeftTrigger) != 0 && (thumbSticks.Left.X == 0 && thumbSticks.Left.Y == 0))
+            if ((buttons & (uint)ButtonsConstants.LeftTrigger) != 0 && triggers.Left == 0)
             {
                 return false;
             }
-            if ((buttons & (uint)ButtonsConstants.RightTrigger) != 0 && (thumbSticks.Right.X == 0 && thumbSticks.Right.Y == 0))
+            if ((buttons & (uint)ButtonsConstants.RightTrigger) != 0 && triggers.Right == 0)
             {
                 return false;
             }
             return ((buttons & 0xFFFF) == 0) || ((rawState.Gamepad.dwButtons ^ (buttons & 0xFFFF)) == 0);
+        }
+
+        public bool AnyButton(uint buttons)
+        {
+            if ((buttons & (uint)ButtonsConstants.LeftTrigger) != 0 && triggers.Left != 0)
+            {
+                return true;
+            }
+            if ((buttons & (uint)ButtonsConstants.RightTrigger) != 0 && triggers.Right != 0)
+            {
+                return true;
+            }
+            return ((rawState.Gamepad.dwButtons & (buttons & 0xFFFF)) != 0);
+        }
+
+        public bool AnyButton()
+        {
+	        //uint buttons = ~(uint)(0);
+            return AnyButton(0xFFFF);
         }
     }
 

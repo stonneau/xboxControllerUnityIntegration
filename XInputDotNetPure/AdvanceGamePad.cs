@@ -5,48 +5,107 @@ namespace XInputDotNetPure
 {
     public class AdvanceGamePad
     {
-        public readonly PlayerIndex playerNumber_;
+        public readonly PlayerIndex playerIndex_;
 
         private GamePadState old_;
+        private GamePadState new_;
+        private GamePadDeadZone deadZone_;
 
-
-        public AdvanceGamePad(PlayerIndex playerNumber)
+        public AdvanceGamePad(PlayerIndex playerIndex)
+            : this(playerIndex, GamePadDeadZone.None)
         {
-            playerNumber_ = playerNumber;
+            // NOTHING
         }
-	
-	/*Requests*/
-	bool IsConnected() const;	
-	/*Checks leftstick first*/
-	void GetLeftStickMovingVector(float& /*x*/, float& /*y*/) const;	
-	/*Checks rightstick*/
-	void GetRightStickMovingVector(float& /*x*/, float& /*y*/) const;
-	// true if above treshold
-	bool GetRightTriggerPressure(float& /*x*/) const;
-	bool GetLeftTriggerPressure(float& /*x*/) const;
-	/*true if combinaison of all buttons are pressed*/
-	/*bool AllTriggered(const int button) const;*/ // this one is never going to happen
-	bool AllPressed(const int button) const;
-	/*bool AllReleased(const int button) const; */ // this one is never going to happen
 
-	/*true if any of button combinaison is working*/
-	bool AnyTriggered(const int button) const;
-	bool AnyPressed(const int button) const;
-	/*true only if all buttons were pressed*/
-	bool AnyReleased(const int button) const;
+        public AdvanceGamePad(PlayerIndex playerIndex, GamePadDeadZone deadZone)
+        {
+            playerIndex_ = playerIndex;
+            deadZone_ = deadZone;
+            old_ = GamePad.GetState(playerIndex, deadZone);
+            new_ = old_;
+        }
 
-	/*none of the buttons indicated are pressed*/
-	bool NonePressed(const int button) const;
-	/*No button at all is pressed*/
-	bool NonePressed() const;
-	bool AnyPressed() const;
+        public void Update()
+        {
+            old_ = new_;
+            new_ = GamePad.GetState(playerIndex_, deadZone_);
+        }
 
-	/*0 if not pressed, else says for how long*/
-	float ButtonPressedTime(const Buttons::Buttons /*button*/) const;
+        public bool AllPressed(uint buttons)
+        {
+            return old_.AllButtons(buttons) & new_.AllButtons(buttons);
+        }
 
-	/*0 means no vibration, 1 is max*/
-	int Vibrate(const float /*leftVal*/, const float /*rightVal*/);
+	    public bool AnyTriggered(uint buttons)
+        {
+            return new_.AnyButton(buttons) & (!old_.AnyButton(buttons));
+        }
+        
+	    public bool AnyPressed(uint buttons)
+        {
+            return new_.AnyButton(buttons) & old_.AnyButton(buttons);
+        }
 
-	void Update(float gameTime = 1.f);
+        /*true only if all buttons were pressed*/
+	    public bool AnyReleased(uint buttons)
+        {
+            return old_.AllButtons(buttons) & !new_.AllButtons(buttons);
+        }
+	    
+	    /*none of the buttons indicated are pressed*/
+	    public bool NonePressed(uint buttons)
+        {
+            return !new_.AnyButton(buttons);
+        }
+
+        /*No button at all is pressed*/
+        public bool NonePressed()
+        {
+            return !new_.AnyButton();
+        }
+
+	    public bool AnyPressed()
+        {
+	        return  new_.AnyButton();
+        }
+
+	    /*0 means no vibration, 1 is max*/
+        public void Vibrate(float leftVal, float rightVal)
+        {
+            GamePad.SetVibration(playerIndex_, leftVal, rightVal);
+        }
+
+        #region redirecting all accessors from gamePadState
+        public uint PacketNumber
+        {
+            get { return new_.PacketNumber; }
+        }
+
+        public bool IsConnected
+        {
+            get { return new_.IsConnected; }
+        }
+
+        public GamePadButtons Buttons
+        {
+            get { return new_.Buttons; }
+        }
+
+        public GamePadDPad DPad
+        {
+            get { return new_.DPad; }
+        }
+
+        public GamePadTriggers Triggers
+        {
+            get { return new_.Triggers; }
+        }
+
+        public GamePadThumbSticks ThumbSticks
+        {
+            get { return new_.ThumbSticks; }
+        }
+        #endregion
     }
+	
 }
